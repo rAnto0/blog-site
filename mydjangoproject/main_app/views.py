@@ -13,18 +13,21 @@ data_db = [
     {'id': 3, 'title': 'Что-то3', 'content': 'Подробности Что-то3', 'is_published': True},
 ]
 
+cats_db = [
+    {'id': 1, 'name': 'Подкатегория1'},
+    {'id': 2, 'name': 'Подкатегория2'},
+    {'id': 3, 'name': 'Подкатегория3'},
+]
+
 
 def main_page(request):
     data = {
         'title': 'Главная страница',
         'menu': menu,
         'posts': data_db,
+        'cat_selected': 0,
     }
     return render(request, 'main_app/main.html', context=data)
-
-
-def page_not_found(request, exception):
-    return HttpResponseNotFound("<h1>Страница не найдена</h1>")
 
 
 def about(request):
@@ -41,3 +44,17 @@ def show_post(request, post_id):
 
 def login(request):
     return render(request, 'base.html')
+
+
+def show_category(request, cat_id):
+    data = {
+        'title': 'Отображение по рубрикам',
+        'menu': menu,
+        'posts': data_db,
+        'cat_selected': cat_id,
+    }
+    return render(request, 'main_app/main.html', context=data)
+
+
+def page_not_found(request, exception):
+    return HttpResponseNotFound("<h1>Страница не найдена</h1>")
