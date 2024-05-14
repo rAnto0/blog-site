@@ -1,6 +1,6 @@
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, get_object_or_404
-from .models import Posts
+from .models import Posts, Category
 
 menu = [
     {'title': "Главная страница", 'url_name': 'main'},
@@ -12,12 +12,6 @@ data_db = [
     {'id': 1, 'title': 'Что-то1', 'content': 'Подробности Что-то1', 'is_published': True},
     {'id': 2, 'title': 'Что-то2', 'content': 'Подробности Что-то2', 'is_published': False},
     {'id': 3, 'title': 'Что-то3', 'content': 'Подробности Что-то3', 'is_published': True},
-]
-
-cats_db = [
-    {'id': 1, 'name': 'Подкатегория1'},
-    {'id': 2, 'name': 'Подкатегория2'},
-    {'id': 3, 'name': 'Подкатегория3'},
 ]
 
 
@@ -44,12 +38,12 @@ def about(request):
 
 
 def show_post(request, post_slug):
-    post = get_object_or_404(Posts, slug=post_slug)
+    posts = get_object_or_404(Posts, slug=post_slug)
 
     data = {
-        'title': post.title,
+        'title': posts.title,
         'menu': menu,
-        'post': post,
+        'post': posts,
         'cat_selected': 1,
     }
 
@@ -60,13 +54,17 @@ def login(request):
     return render(request, 'base.html')
 
 
-def show_category(request, cat_id):
+def show_category(request, cat_slug):
+    category = get_object_or_404(Category, slug=cat_slug)
+    posts = Posts.published.filter(cat_id=category.pk)
+
     data = {
-        'title': 'Отображение по рубрикам',
+        'title': f'Рубрика: {category.name}',
         'menu': menu,
-        'posts': data_db,
-        'cat_selected': cat_id,
+        'posts': posts,
+        'cat_selected': category.pk,
     }
+
     return render(request, 'main_app/main.html', context=data)
 
 
