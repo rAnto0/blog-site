@@ -1,5 +1,6 @@
 from django.http import HttpResponseNotFound, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
+from .models import Posts
 
 menu = [
     {'title': "Главная страница", 'url_name': 'main'},
@@ -21,12 +22,15 @@ cats_db = [
 
 
 def main_page(request):
+    posts = Posts.published.all()
+
     data = {
         'title': 'Главная страница',
         'menu': menu,
-        'posts': data_db,
+        'posts': posts,
         'cat_selected': 0,
     }
+
     return render(request, 'main_app/main.html', context=data)
 
 
@@ -35,11 +39,21 @@ def about(request):
         'title': 'О сайте',
         'menu': menu,
     }
+
     return render(request, 'main_app/about.html', context=data)
 
 
-def show_post(request, post_id):
-    return HttpResponse(f'Отображение статьи с id = {post_id}')
+def show_post(request, post_slug):
+    post = get_object_or_404(Posts, slug=post_slug)
+
+    data = {
+        'title': post.title,
+        'menu': menu,
+        'post': post,
+        'cat_selected': 1,
+    }
+
+    return render(request, 'main_app/post.html', data)
 
 
 def login(request):
