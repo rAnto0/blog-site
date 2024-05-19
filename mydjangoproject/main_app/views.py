@@ -8,15 +8,9 @@ menu = [
     {'title': "Войти", 'url_name': 'login'},
 ]
 
-data_db = [
-    {'id': 1, 'title': 'Что-то1', 'content': 'Подробности Что-то1', 'is_published': True},
-    {'id': 2, 'title': 'Что-то2', 'content': 'Подробности Что-то2', 'is_published': False},
-    {'id': 3, 'title': 'Что-то3', 'content': 'Подробности Что-то3', 'is_published': True},
-]
-
 
 def main_page(request):
-    posts = Posts.published.all()
+    posts = Posts.published.all().select_related('cat')
 
     data = {
         'title': 'Главная страница',
@@ -56,7 +50,7 @@ def login(request):
 
 def show_category(request, cat_slug):
     category = get_object_or_404(Category, slug=cat_slug)
-    posts = Posts.published.filter(cat_id=category.pk)
+    posts = Posts.published.filter(cat_id=category.pk).select_related('cat')
 
     data = {
         'title': f'Рубрика: {category.name}',
@@ -70,7 +64,7 @@ def show_category(request, cat_slug):
 
 def show_tag_postlist(request, tag_slug):
     tag = get_object_or_404(TagPost, slug=tag_slug)
-    posts = tag.tags.filter(is_published=Posts.Status.PUBLISHED)
+    posts = tag.tags.filter(is_published=Posts.Status.PUBLISHED).select_related('cat')
 
     data = {
         'title': f'Тег: {tag.tag}',
