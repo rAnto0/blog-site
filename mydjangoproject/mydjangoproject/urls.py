@@ -28,4 +28,4 @@ urlpatterns = [
 handler404 = page_not_found
 
 admin.site.site_header = 'Панель администрирования'
-admin.site.index_title = 'Посты'
+admin.site.index_title = 'Блог'
