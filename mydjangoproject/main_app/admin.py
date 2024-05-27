@@ -2,6 +2,23 @@ from django.contrib import admin, messages
 from .models import Posts, Category
 
 
+class AdditionalInfoFilter(admin.SimpleListFilter):
+    title = 'Статус доп информации'
+    parameter_name = 'status'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('additional_info', 'Доп информация'),
+            ('not_additional_info', 'Доп информация отсутствует')
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value() == 'additional_info':
+            return queryset.filter(additional_info__isnull=False)
+        elif self.value() == 'not_additional_info':
+            return queryset.filter(additional_info__isnull=True)
+
+
 @admin.register(Posts)
 class PostsAdmin(admin.ModelAdmin):
     list_display = ('title', 'time_create', 'is_published', 'cat', 'brief_info')
@@ -10,6 +27,8 @@ class PostsAdmin(admin.ModelAdmin):
     list_editable = ('is_published', )
     list_per_page = 10
     actions = ['set_published', 'set_draft']
+    search_fields = ['title', 'cat__name']
+    list_filter = [AdditionalInfoFilter, 'cat__name', 'is_published']
 
     @admin.display(description='Краткое описание', ordering='content')
     def brief_info(self, post: Posts):
