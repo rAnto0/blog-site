@@ -4,6 +4,7 @@ from .models import Posts, Category, TagPost
 
 menu = [
     {'title': "Главная страница", 'url_name': 'main'},
+    {'title': "Добавить статью", 'url_name': 'addpage'},
     {'title': "О сайте", 'url_name': 'about'},
     {'title': "Войти", 'url_name': 'login'},
 ]
@@ -29,6 +30,15 @@ def about(request):
     }
 
     return render(request, 'main_app/about.html', context=data)
+
+
+def addpage(request):
+    data = {
+        'title': 'Добавить статью',
+        'menu': menu,
+    }
+
+    return render(request, 'main_app/addpage.html', context=data)
 
 
 def show_post(request, post_slug):
