@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinLengthValidator, MaxLengthValidator
 from django.utils.deconstruct import deconstructible
 
-from .models import Category, ArticleAdditionalDescription
+from .models import Category, ArticleAdditionalDescription, Posts
 
 
 @deconstructible
@@ -19,29 +19,26 @@ class RussianValidator:
             raise ValidationError(self.message, code=self.code)
 
 
-class AddPostForm(forms.Form):
-    title = forms.CharField(max_length=255, min_length=5, label='Заголовок',
-                            widget=forms.TextInput(attrs={'class': 'form-input'}),
-                            error_messages={
-                                'min_length': 'Слишком короткий заголовок',
-                                'required': 'Нужно ввести заголовок'
-                            })
-    slug = forms.SlugField(max_length=255, label='URL',
-                           validators=[
-                               MinLengthValidator(5, message='Минимум 5 символов'),
-                               MaxLengthValidator(100, message='Максимум 100 символов')
-                           ])
-    content = forms.CharField(widget=forms.Textarea(attrs={'cols': 50, 'rows': 5}), required=False, label='Контент')
-    is_published = forms.BooleanField(required=False, initial=True, label='Статус')
+class AddPostForm(forms.ModelForm):
     cat = forms.ModelChoiceField(queryset=Category.objects.all(), empty_label='Категория не выбрана', label='Категории')
     additional_info = forms.ModelChoiceField(queryset=ArticleAdditionalDescription.objects.all(),
                                              empty_label='Дополнительной информации нет', required=False,
                                              label='Доп информация')
 
+    class Meta:
+        model = Posts
+        fields = ['title', 'slug', 'content', 'is_published', 'cat', 'additional_info', 'tags']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-input'}),
+            'content': forms.Textarea(attrs={'cols': 50, 'rows': 5}),
+        }
+        labels = {'slug': 'URL'}
+
     def clean_title(self):
         title = self.cleaned_data['title']
-        ALLOWED_CHARS = 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя0123456789- '
+        if len(title) > 50:
+            raise ValidationError('Длина превышает 50 символов')
+        elif len(title) < 5:
+            raise ValidationError('Длина заголовка меньше 5 символов')
 
-        if not (set(title) <= set(ALLOWED_CHARS)):
-            raise ValidationError('Должны присутствовать только русские символы, дефис и пробел.')
-
+        return title

@@ -39,11 +39,13 @@ def addpage(request):
         form = AddPostForm(request.POST)
         if form.is_valid():
             # print(form.cleaned_data)
-            try:
-                Posts.objects.create(**form.cleaned_data)
-                return redirect('main')
-            except:
-                form.add_error(None, 'Ошибка добавления поста')
+            # try:
+            #     Posts.objects.create(**form.cleaned_data)
+            #     return redirect('main')
+            # except:
+            #     form.add_error(None, 'Ошибка добавления поста')
+            form.save()
+            return redirect('main')
     else:
         form = AddPostForm()
 
