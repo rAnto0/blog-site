@@ -1,8 +1,10 @@
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
-from .forms import AddPostForm
+from .forms import AddPostForm, UploadFileForm
 from .models import Posts, Category, TagPost
+
+import uuid
 
 menu = [
     {'title': "Главная страница", 'url_name': 'main'},
@@ -25,10 +27,25 @@ def main_page(request):
     return render(request, 'main_app/main.html', context=data)
 
 
+def handle_uploaded_file(f):
+    file_name, file_extension = f.name.split('.')
+    with open(f"mydjangoproject/uploads/{file_name}-{uuid.uuid4()}.{file_extension}", "wb+") as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+
 def about(request):
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            handle_uploaded_file(form.cleaned_data['file'])
+    else:
+        form = UploadFileForm()
+
     data = {
         'title': 'О сайте',
         'menu': menu,
+        'form': form,
     }
 
     return render(request, 'main_app/about.html', context=data)

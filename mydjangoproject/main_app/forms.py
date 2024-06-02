@@ -42,3 +42,7 @@ class AddPostForm(forms.ModelForm):
             raise ValidationError('Длина заголовка меньше 5 символов')
 
         return title
+
+
+class UploadFileForm(forms.Form):
+    file = forms.ImageField(label='Файл')
