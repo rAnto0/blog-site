@@ -1,4 +1,6 @@
 from django.contrib import admin, messages
+from django.utils.safestring import mark_safe
+
 from .models import Posts, Category
 
 
@@ -21,13 +23,13 @@ class AdditionalInfoFilter(admin.SimpleListFilter):
 
 @admin.register(Posts)
 class PostsAdmin(admin.ModelAdmin):
-    fields = ['title', 'slug', 'content', 'cat', 'additional_info', 'tags']
+    fields = ['title', 'slug', 'content', 'photo', 'post_photo', 'cat', 'additional_info', 'tags']
     # exclude = ['tags', 'is_published']
-    # readonly_fields = ['slug']
+    readonly_fields = ['post_photo']
     prepopulated_fields = {'slug': ('title', )}
     filter_horizontal = ['tags']
     # filter_vertical = ['tags']
-    list_display = ('title', 'time_create', 'is_published', 'cat', 'brief_info')
+    list_display = ('title', 'post_photo', 'time_create', 'is_published', 'cat')
     list_display_links = ('title', )
     ordering = ['time_create', 'title']
     list_editable = ('is_published', )
@@ -35,10 +37,13 @@ class PostsAdmin(admin.ModelAdmin):
     actions = ['set_published', 'set_draft']
     search_fields = ['title', 'cat__name']
     list_filter = [AdditionalInfoFilter, 'cat__name', 'is_published']
+    save_on_top = True
 
-    @admin.display(description='Краткое описание', ordering='content')
-    def brief_info(self, post: Posts):
-        return f'Описание {len(post.content)} символов.'
+    @admin.display(description='Изображение', ordering='content')
+    def post_photo(self, post: Posts):
+        if post.photo:
+            return mark_safe(f'<img src="{post.photo.url}" width=50>')
+        return 'Без фото'
 
     @admin.action(description='Опубликовать выбранные записи')
     def set_published(self, request, queryset):
