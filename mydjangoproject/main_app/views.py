@@ -2,7 +2,7 @@ from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 
 from .forms import AddPostForm, UploadFileForm
-from .models import Posts, Category, TagPost
+from .models import Posts, Category, TagPost, UploadFiles
 
 import uuid
 
@@ -29,7 +29,7 @@ def main_page(request):
 
 def handle_uploaded_file(f):
     file_name, file_extension = f.name.split('.')
-    with open(f"mydjangoproject/uploads/{file_name}-{uuid.uuid4()}.{file_extension}", "wb+") as destination:
+    with open(f"uploads/{file_name}-{uuid.uuid4()}.{file_extension}", "wb+") as destination:
         for chunk in f.chunks():
             destination.write(chunk)
 
@@ -38,7 +38,9 @@ def about(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            handle_uploaded_file(form.cleaned_data['file'])
+            # handle_uploaded_file(form.cleaned_data['file'])
+            fp = UploadFiles(file=form.cleaned_data['file'])
+            fp.save()
     else:
         form = UploadFileForm()
 
@@ -53,7 +55,7 @@ def about(request):
 
 def addpage(request):
     if request.method == 'POST':
-        form = AddPostForm(request.POST)
+        form = AddPostForm(request.POST, request.FILES)
         if form.is_valid():
             # print(form.cleaned_data)
             # try:
