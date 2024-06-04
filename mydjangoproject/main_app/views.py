@@ -1,5 +1,7 @@
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views import View
+from django.views.generic import TemplateView
 
 from .forms import AddPostForm, UploadFileForm
 from .models import Posts, Category, TagPost, UploadFiles
@@ -27,11 +29,29 @@ def main_page(request):
     return render(request, 'main_app/main.html', context=data)
 
 
-def handle_uploaded_file(f):
-    file_name, file_extension = f.name.split('.')
-    with open(f"uploads/{file_name}-{uuid.uuid4()}.{file_extension}", "wb+") as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
+class MainPage(TemplateView):
+    template_name = 'main_app/main.html'
+    extra_context = {
+        'title': 'Главная страница',
+        'menu': menu,
+        'posts': Posts.published.all().select_related('cat'),
+        'cat_selected': 0,
+    }
+
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['title'] = 'Главная страница'
+    #     context['menu'] = menu
+    #     context['posts'] = Posts.published.all().select_related('cat'),
+    #     context['cat_selected'] = int(self.request.GET.get('cat_id', 0))
+    #     return context
+
+
+# def handle_uploaded_file(f):
+#     file_name, file_extension = f.name.split('.')
+#     with open(f"uploads/{file_name}-{uuid.uuid4()}.{file_extension}", "wb+") as destination:
+#         for chunk in f.chunks():
+#             destination.write(chunk)
 
 
 def about(request):
@@ -75,6 +95,33 @@ def addpage(request):
     }
 
     return render(request, 'main_app/addpage.html', context=data)
+
+
+class AddPage(View):
+    def get(self, request):
+        form = AddPostForm()
+
+        data = {
+            'title': 'Добавить статью',
+            'menu': menu,
+            'form': form,
+        }
+
+        return render(request, 'main_app/addpage.html', context=data)
+
+    def post(self, request):
+        form = AddPostForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('main')
+
+        data = {
+            'title': 'Добавить статью',
+            'menu': menu,
+            'form': form,
+        }
+
+        return render(request, 'main_app/addpage.html', context=data)
 
 
 def show_post(request, post_slug):
