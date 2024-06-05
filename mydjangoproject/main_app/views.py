@@ -1,7 +1,8 @@
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic import TemplateView, ListView, DetailView, FormView
 
 from .forms import AddPostForm, UploadFileForm
 from .models import Posts, Category, TagPost, UploadFiles
@@ -101,31 +102,44 @@ def about(request):
 #     return render(request, 'main_app/addpage.html', context=data)
 
 
-class AddPage(View):
-    def get(self, request):
-        form = AddPostForm()
+class AddPage(FormView):
+    form_class = AddPostForm
+    template_name = 'main_app/addpage.html'
+    success_url = reverse_lazy('main')  # reverse_lazy позволяет выстраивать маршрут лишь тогда когда он будет необходим
+    extra_context = {
+        'title': 'Добавить статью',
+        'menu': menu,
+    }
 
-        data = {
-            'title': 'Добавить статью',
-            'menu': menu,
-            'form': form,
-        }
+    def form_valid(self, form):
+        form.save()
+        return super().form_valid(form)
 
-        return render(request, 'main_app/addpage.html', context=data)
-
-    def post(self, request):
-        form = AddPostForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('main')
-
-        data = {
-            'title': 'Добавить статью',
-            'menu': menu,
-            'form': form,
-        }
-
-        return render(request, 'main_app/addpage.html', context=data)
+# class AddPage(View):
+#     def get(self, request):
+#         form = AddPostForm()
+#
+#         data = {
+#             'title': 'Добавить статью',
+#             'menu': menu,
+#             'form': form,
+#         }
+#
+#         return render(request, 'main_app/addpage.html', context=data)
+#
+#     def post(self, request):
+#         form = AddPostForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('main')
+#
+#         data = {
+#             'title': 'Добавить статью',
+#             'menu': menu,
+#             'form': form,
+#         }
+#
+#         return render(request, 'main_app/addpage.html', context=data)
 
 
 # def show_post(request, post_slug):
