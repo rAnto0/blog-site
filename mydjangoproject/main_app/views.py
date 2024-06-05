@@ -1,7 +1,7 @@
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
-from django.views.generic import TemplateView, ListView
+from django.views.generic import TemplateView, ListView, DetailView
 
 from .forms import AddPostForm, UploadFileForm
 from .models import Posts, Category, TagPost, UploadFiles
@@ -128,17 +128,33 @@ class AddPage(View):
         return render(request, 'main_app/addpage.html', context=data)
 
 
-def show_post(request, post_slug):
-    posts = get_object_or_404(Posts, slug=post_slug)
+# def show_post(request, post_slug):
+#     posts = get_object_or_404(Posts, slug=post_slug)
+#
+#     data = {
+#         'title': posts.title,
+#         'menu': menu,
+#         'post': posts,
+#         'cat_selected': 1,
+#     }
+#
+#     return render(request, 'main_app/post.html', data)
 
-    data = {
-        'title': posts.title,
-        'menu': menu,
-        'post': posts,
-        'cat_selected': 1,
-    }
 
-    return render(request, 'main_app/post.html', data)
+class ShowPost(DetailView):
+    model = Posts
+    template_name = 'main_app/post.html'
+    slug_url_kwarg = 'post_slug'  # заменяем дефолт slug/pk на свой
+    context_object_name = 'post'  # заменяем дефолт object на свой
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = context['post'].title
+        context['menu'] = menu
+        return context
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Posts.published, slug=self.kwargs[self.slug_url_kwarg])
 
 
 def login(request):
