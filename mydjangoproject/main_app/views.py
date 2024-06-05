@@ -9,54 +9,18 @@ from .models import Posts, Category, TagPost, UploadFiles
 
 import uuid
 
-menu = [
-    {'title': "Главная страница", 'url_name': 'main'},
-    {'title': "Добавить статью", 'url_name': 'addpage'},
-    {'title': "О сайте", 'url_name': 'about'},
-    {'title': "Войти", 'url_name': 'login'},
-]
+from .utils import DataMixin
 
 
-# def main_page(request):
-#     posts = Posts.published.all().select_related('cat')
-#
-#     data = {
-#         'title': 'Главная страница',
-#         'menu': menu,
-#         'posts': posts,
-#         'cat_selected': 0,
-#     }
-#
-#     return render(request, 'main_app/main.html', context=data)
-
-
-class MainPage(ListView):
+class MainPage(DataMixin, ListView):
     # model = Posts
     template_name = 'main_app/main.html'
     context_object_name = 'posts'
-    extra_context = {
-        'title': 'Главная страница',
-        'menu': menu,
-        'cat_selected': 0,
-    }
+    title_page = 'Главная страница'
+    cat_selected = 0
 
     def get_queryset(self):
         return Posts.published.all().select_related('cat')
-
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['title'] = 'Главная страница'
-    #     context['menu'] = menu
-    #     context['posts'] = Posts.published.all().select_related('cat'),
-    #     context['cat_selected'] = int(self.request.GET.get('cat_id', 0))
-    #     return context
-
-
-# def handle_uploaded_file(f):
-#     file_name, file_extension = f.name.split('.')
-#     with open(f"uploads/{file_name}-{uuid.uuid4()}.{file_extension}", "wb+") as destination:
-#         for chunk in f.chunks():
-#             destination.write(chunk)
 
 
 def about(request):
@@ -71,125 +35,40 @@ def about(request):
 
     data = {
         'title': 'О сайте',
-        'menu': menu,
         'form': form,
     }
 
     return render(request, 'main_app/about.html', context=data)
 
 
-# def addpage(request):
-#     if request.method == 'POST':
-#         form = AddPostForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             # print(form.cleaned_data)
-#             # try:
-#             #     Posts.objects.create(**form.cleaned_data)
-#             #     return redirect('main')
-#             # except:
-#             #     form.add_error(None, 'Ошибка добавления поста')
-#             form.save()
-#             return redirect('main')
-#     else:
-#         form = AddPostForm()
-#
-#     data = {
-#         'title': 'Добавить статью',
-#         'menu': menu,
-#         'form': form,
-#     }
-#
-#     return render(request, 'main_app/addpage.html', context=data)
-
-
-class AddPage(CreateView):
+class AddPage(DataMixin, CreateView):
     form_class = AddPostForm
-    # model = Posts
-    # fields = ['title', 'slug', 'content', 'is_published', 'cat']
     template_name = 'main_app/addpage.html'
-    # success_url = reverse_lazy('main')  # reverse_lazy позволяет выстраивать маршрут лишь тогда когда он будет нужен
-    extra_context = {
-        'title': 'Добавить статью',
-        'menu': menu,
-    }
-
-    # def form_valid(self, form):
-    #     form.save()
-    #     return super().form_valid(form)
+    title_page = 'Добавление статьи'
 
 
-class UpdatePage(UpdateView):
+class UpdatePage(DataMixin, UpdateView):
     model = Posts
     fields = ['title', 'content', 'photo', 'is_published', 'cat']
     template_name = 'main_app/addpage.html'
     success_url = reverse_lazy('main')  # reverse_lazy позволяет выстраивать маршрут лишь тогда когда он будет нужен
-    extra_context = {
-        'title': 'Редактирование статьи',
-        'menu': menu,
-    }
+    title_page = 'Редактирование статьи'
 
 
-class DeletePage(DeleteView):
+class DeletePage(DataMixin, DeleteView):
     model = Posts
-    # template_name = 'main_app/addpage.html'
     success_url = reverse_lazy('main')
-    extra_context = {
-        'title': 'Удаление статьи',
-        'menu': menu,
-    }
+    title_page = 'Удаление статьи'
 
 
-# class AddPage(View):
-#     def get(self, request):
-#         form = AddPostForm()
-#
-#         data = {
-#             'title': 'Добавить статью',
-#             'menu': menu,
-#             'form': form,
-#         }
-#
-#         return render(request, 'main_app/addpage.html', context=data)
-#
-#     def post(self, request):
-#         form = AddPostForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             form.save()
-#             return redirect('main')
-#
-#         data = {
-#             'title': 'Добавить статью',
-#             'menu': menu,
-#             'form': form,
-#         }
-#
-#         return render(request, 'main_app/addpage.html', context=data)
-
-
-# def show_post(request, post_slug):
-#     posts = get_object_or_404(Posts, slug=post_slug)
-#
-#     data = {
-#         'title': posts.title,
-#         'menu': menu,
-#         'post': posts,
-#         'cat_selected': 1,
-#     }
-#
-#     return render(request, 'main_app/post.html', data)
-
-
-class ShowPost(DetailView):
-    model = Posts
+class ShowPost(DataMixin, DetailView):
     template_name = 'main_app/post.html'
     slug_url_kwarg = 'post_slug'  # заменяем дефолт slug/pk на свой
     context_object_name = 'post'  # заменяем дефолт object на свой
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = context['post'].title
-        context['menu'] = menu
-        return context
+        return self.get_mixin_context(context, title=context['post'].title)
 
     def get_object(self, queryset=None):
         return get_object_or_404(Posts.published, slug=self.kwargs[self.slug_url_kwarg])
@@ -199,21 +78,7 @@ def login(request):
     return render(request, 'base.html')
 
 
-# def show_category(request, cat_slug):
-#     category = get_object_or_404(Category, slug=cat_slug)
-#     posts = Posts.published.filter(cat_id=category.pk).select_related('cat')
-#
-#     data = {
-#         'title': f'Рубрика: {category.name}',
-#         'menu': menu,
-#         'posts': posts,
-#         'cat_selected': category.pk,
-#     }
-#
-#     return render(request, 'main_app/main.html', context=data)
-
-
-class PostsCategory(ListView):
+class PostsCategory(DataMixin, ListView):
     template_name = 'main_app/main.html'
     # в html шаблоне обращение идёт к posts,
     # если не указать этот атрибут context_object_name тогда по дефолту нужно указывать - object_list
@@ -227,28 +92,10 @@ class PostsCategory(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        # cat = context['posts'][0].cat
-        context['title'] = f'Категория - {self.cat.name}'
-        context['menu'] = menu
-        context['cat_selected'] = self.cat.pk
-        return context
+        return self.get_mixin_context(context, title=f'Категория - {self.cat.name}', cat_selected=self.cat.pk)
 
 
-# def show_tag_postlist(request, tag_slug):
-#     tag = get_object_or_404(TagPost, slug=tag_slug)
-#     posts = tag.tags.filter(is_published=Posts.Status.PUBLISHED).select_related('cat')
-#
-#     data = {
-#         'title': f'Тег: {tag.tag}',
-#         'menu': menu,
-#         'posts': posts,
-#         'cat_selected': None,
-#     }
-#
-#     return render(request, 'main_app/main.html', context=data)
-
-
-class PostsTagPostList(ListView):
+class PostsTagPostList(DataMixin, ListView):
     template_name = 'main_app/main.html'
     # в html шаблоне обращение идёт к posts,
     # если не указать этот атрибут context_object_name тогда по дефолту нужно указывать - object_list
@@ -261,10 +108,7 @@ class PostsTagPostList(ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = f'Посты с тегом - {self.tag.tag}'
-        context['menu'] = menu
-        context['cat_selected'] = None
-        return context
+        return self.get_mixin_context(context, title=f'Посты с тегом - {self.tag.tag}')
 
 
 def page_not_found(request, exception):
