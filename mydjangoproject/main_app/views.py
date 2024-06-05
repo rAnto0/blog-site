@@ -2,7 +2,7 @@ from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, reverse_lazy
 from django.views import View
-from django.views.generic import TemplateView, ListView, DetailView, FormView
+from django.views.generic import TemplateView, ListView, DetailView, FormView, CreateView, UpdateView, DeleteView
 
 from .forms import AddPostForm, UploadFileForm
 from .models import Posts, Category, TagPost, UploadFiles
@@ -102,18 +102,42 @@ def about(request):
 #     return render(request, 'main_app/addpage.html', context=data)
 
 
-class AddPage(FormView):
+class AddPage(CreateView):
     form_class = AddPostForm
+    # model = Posts
+    # fields = ['title', 'slug', 'content', 'is_published', 'cat']
     template_name = 'main_app/addpage.html'
-    success_url = reverse_lazy('main')  # reverse_lazy позволяет выстраивать маршрут лишь тогда когда он будет необходим
+    # success_url = reverse_lazy('main')  # reverse_lazy позволяет выстраивать маршрут лишь тогда когда он будет нужен
     extra_context = {
         'title': 'Добавить статью',
         'menu': menu,
     }
 
-    def form_valid(self, form):
-        form.save()
-        return super().form_valid(form)
+    # def form_valid(self, form):
+    #     form.save()
+    #     return super().form_valid(form)
+
+
+class UpdatePage(UpdateView):
+    model = Posts
+    fields = ['title', 'content', 'photo', 'is_published', 'cat']
+    template_name = 'main_app/addpage.html'
+    success_url = reverse_lazy('main')  # reverse_lazy позволяет выстраивать маршрут лишь тогда когда он будет нужен
+    extra_context = {
+        'title': 'Редактирование статьи',
+        'menu': menu,
+    }
+
+
+class DeletePage(DeleteView):
+    model = Posts
+    # template_name = 'main_app/addpage.html'
+    success_url = reverse_lazy('main')
+    extra_context = {
+        'title': 'Удаление статьи',
+        'menu': menu,
+    }
+
 
 # class AddPage(View):
 #     def get(self, request):
