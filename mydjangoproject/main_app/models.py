@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from django.core.validators import MinLengthValidator, MaxLengthValidator
 from django.db import models
 from django.urls import reverse
@@ -29,6 +30,8 @@ class Posts(models.Model):
     tags = models.ManyToManyField('TagPost', blank=True, related_name='tags', verbose_name='Теги')
     additional_info = models.OneToOneField('ArticleAdditionalDescription', on_delete=models.SET_NULL, null=True,
                                            blank=True, related_name='post', verbose_name='Дополнительная информация')
+    author = models.ForeignKey(get_user_model(), on_delete=models.SET_NULL, related_name='post', null=True,
+                               default=None)
 
     objects = models.Manager()
     published = PublishedManager()
