@@ -24,7 +24,7 @@
                     <li><a href="{% url m.url_name %}">{{m.title}}</a></li>
                     {% endfor %}
                     {% if user.is_authenticated %}
-                    <li class="last"> {{user.username}} |
+                    <li class="last"><a href="{% url 'users:profile' %}">{{user.username}}</a> |
                         <form style="display:inline-block" method="post" action="{% url 'users:logout' %}">
                             {% csrf_token %}
                             <button type="submit">Выйти</button>
