@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.core.paginator import Paginator
 from django.http import HttpResponseNotFound, HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -42,10 +42,11 @@ def about(request):
     return render(request, 'main_app/about.html', context=data)
 
 
-class AddPage(LoginRequiredMixin, DataMixin, CreateView):
+class AddPage(PermissionRequiredMixin, LoginRequiredMixin, DataMixin, CreateView):
     form_class = AddPostForm
     template_name = 'main_app/addpage.html'
     title_page = 'Добавление статьи'
+    permission_required = 'main_app.add_posts'
 
     def form_valid(self, form):
         p = form.save(commit=False)
@@ -53,12 +54,13 @@ class AddPage(LoginRequiredMixin, DataMixin, CreateView):
         return super().form_valid(form)
 
 
-class UpdatePage(DataMixin, UpdateView):
+class UpdatePage(PermissionRequiredMixin, DataMixin, UpdateView):
     model = Posts
     fields = ['title', 'content', 'photo', 'is_published', 'cat']
     template_name = 'main_app/addpage.html'
     success_url = reverse_lazy('main')  # reverse_lazy позволяет выстраивать маршрут лишь тогда когда он будет нужен
     title_page = 'Редактирование статьи'
+    permission_required = 'main_app.change_posts'
 
 
 class DeletePage(DataMixin, DeleteView):
