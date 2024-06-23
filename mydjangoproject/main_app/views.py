@@ -9,18 +9,21 @@ from .serializers import PostsSerializer
 
 class PostsAPIView(APIView):
     def get(self, request):
-        lst = Posts.objects.all().values()
+        p = Posts.objects.all()
 
-        return Response({'posts': list(lst)})
+        return Response({'posts': PostsSerializer(p, many=True).data})
 
     def post(self, request):
+        serializer = PostsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
         post_new = Posts.objects.create(
             title=request.data['title'],
             content=request.data['content'],
             cat_id=request.data['cat_id'],
         )
 
-        return Response({'post': model_to_dict(post_new)})
+        return Response({'post': PostsSerializer(post_new).data})
 
 
 # class PostsAPIView(generics.ListAPIView):
