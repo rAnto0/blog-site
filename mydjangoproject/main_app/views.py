@@ -7,6 +7,11 @@ from .models import Posts
 from .serializers import PostsSerializer
 
 
+class PostsAPIList(generics.ListCreateAPIView):
+    queryset = Posts.objects.all()
+    serializer_class = PostsSerializer
+
+
 class PostsAPIView(APIView):
     def get(self, request):
         p = Posts.objects.all()
