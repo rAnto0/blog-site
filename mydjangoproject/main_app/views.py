@@ -16,15 +16,36 @@ class PostsAPIView(APIView):
     def post(self, request):
         serializer = PostsSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-        post_new = Posts.objects.create(
-            title=request.data['title'],
-            content=request.data['content'],
-            cat_id=request.data['cat_id'],
-        )
+        return Response({'post': serializer.data})
 
-        return Response({'post': PostsSerializer(post_new).data})
+    def put(self, request, *args, **kwargs):
+        pk = kwargs.get('pk', None)
+        if not pk:
+            return Response({'error': 'Method PUT not allowed'})
 
+        try:
+            instance = Posts.objects.get(pk=pk)
+        except:
+            return Response({'error': 'Object does not exists'})
+
+        serializer = PostsSerializer(data=request.data, instance=instance)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'post': serializer.data})
+
+    def delete(self, request, *args, **kwargs):
+        pk = kwargs.get('pk', None)
+        if not pk:
+            return Response({'error': 'Method DELETE not allowed'})
+
+        try:
+            instance = Posts.objects.get(pk=pk)
+            instance.delete()
+            return Response({'post': f'Object {pk} is deleted'})
+        except:
+            return Response({'error': 'Object does not exists'})
 
 # class PostsAPIView(generics.ListAPIView):
 #     queryset = Posts.objects.all()

@@ -21,5 +21,6 @@ from main_app.views import PostsAPIView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/postslist/', PostsAPIView.as_view())
+    path('api/v1/postslist/', PostsAPIView.as_view()),
+    path('api/v1/postslist/<int:pk>/', PostsAPIView.as_view()),
 ]
