@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAdminUser
 from rest_framework.response import Response
 
 from .models import Posts, Category
-from .permissions import IsAdminOrReadOnlu, IsOwnerOrReadOnly
+from .permissions import IsAdminOrReadOnly, IsOwnerOrReadOnly
 from .serializers import PostsSerializer
 
 
@@ -23,4 +23,4 @@ class PostsAPIUpdate(generics.RetrieveUpdateAPIView):
 class PostsAPIDestroy(generics.RetrieveDestroyAPIView):
     queryset = Posts.objects.all()
     serializer_class = PostsSerializer
-    permission_classes = (IsAdminOrReadOnlu, )
+    permission_classes = (IsAdminOrReadOnly, )
